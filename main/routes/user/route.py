@@ -4,11 +4,45 @@ from typing import List
 from database import get_db
 from routes.user import crud, schemas
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
+
+# JWT конфигурация
+SECRET_KEY = "sosal"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 
 router = APIRouter(
     prefix="/users",
     tags=["users"]
 )
+
+# Схема для входных данных
+
+
+# Утилита для создания JWT токена
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# Эндпоинт для логина
+@router.post("/login")
+def login(login_data: schemas.LoginRequest, db: Session = Depends(get_db)):
+    # Проверяем email
+    user = crud.get_user_by_email(db, email=login_data.email)
+    if not user or user.password != login_data.password:  # Пароль без хэширования
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неправильный email или пароль"
+        )
+
+    # Создаём JWT токен
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -22,7 +56,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db=db,
         username=user.username,
         email=user.email,
-        password_hash=user.password  # Note: In production, hash the password before storing
+        password=user.password  # Note: In production, hash the password before storing
     )
 
 @router.get("/{user_id}", response_model=schemas.User)

@@ -1,7 +1,9 @@
-// app/register/page.tsx
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,15 +14,57 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (formData.password.length < 8) {
+      setErrorMessage("Пароль должен содержать минимум 8 символов.");
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Пароли не совпадают.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log(formData);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        setSuccessMessage("Регистрация успешна! Перенаправляем...");
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Ошибка регистрации. Попробуйте снова.");
+      }
+    } catch (error) {
+      setErrorMessage("Ошибка соединения. Проверьте подключение к интернету.");
+    }
   };
 
   if (!mounted) {
@@ -28,7 +72,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
       style={{
         backgroundImage: 'url("/images/main_back.png")',
@@ -43,7 +87,18 @@ export default function RegisterPage() {
           <h2 className="font-pixel text-3xl text-white text-center mb-8">
             Регистрация
           </h2>
-          
+
+          {errorMessage && (
+            <div className="bg-red-500/70 text-white font-pixel text-sm rounded-lg px-4 py-2 mb-4">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="bg-green-500/70 text-white font-pixel text-sm rounded-lg px-4 py-2 mb-4">
+              {successMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="username" className="font-pixel text-gray-200 block text-sm mb-2">
@@ -122,7 +177,7 @@ export default function RegisterPage() {
               Уже есть аккаунт?
             </p>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push("/login")}
               className="font-pixel text-pink-400 hover:text-pink-300 transition"
             >
               Войти
