@@ -39,7 +39,7 @@ export default function LoginPage() {
 
         // Перенаправление
         console.log("Before redirect");
-        router.push("/");
+        router.push("/dashboard");
         console.log("After redirect");
       } else {
         const errorData = await response.json();

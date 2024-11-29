@@ -5,7 +5,7 @@ from database import get_db
 from routes.user import crud, schemas
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt
 
 # JWT конфигурация
@@ -19,8 +19,30 @@ router = APIRouter(
     tags=["users"]
 )
 
-# Схема для входных данных
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
+# Верификация токена
+def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token does not contain email",
+            )
+        expiration = payload.get("exp")
+        if expiration < datetime.utcnow().timestamp():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+            )
+        return email
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
 
 # Утилита для создания JWT токена
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -28,6 +50,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@router.get("/verify-token")
+def verify_route(email: str = Depends(verify_token)):
+    return {"email": email }
 
 # Эндпоинт для логина
 @router.post("/login")
