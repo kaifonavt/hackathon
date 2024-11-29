@@ -1,24 +1,12 @@
-from pydantic import BaseModel
-from typing import Optional, Dict
-from datetime import datetime
+from pydantic import BaseModel, Field
+from datetime import time
 
-class ScheduleBase(BaseModel):
-    student_id: int
-    lesson_id: int
-    scheduled_date: datetime
-    completion_metadata: Optional[Dict] = None
-
-class ScheduleCreate(ScheduleBase):
-    pass
-
-class ScheduleUpdate(BaseModel):
-    scheduled_date: Optional[datetime] = None
-    is_completed: Optional[bool] = None
-    completion_metadata: Optional[Dict] = None
-
-class Schedule(ScheduleBase):
+class Schedule(BaseModel):
     id: int
-    is_completed: bool
+    code: str
+    day_of_week: int
+    start_time: time
+    end_time: time
 
     class Config:
         from_attributes = True

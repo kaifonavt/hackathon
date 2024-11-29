@@ -46,7 +46,6 @@ class User(Base):
 
     # Relationships
     enrolled_courses = relationship("Course", secondary=course_students, back_populates="students")
-    schedules = relationship("Schedule", back_populates="student")
     goals = relationship("PersonalGoal", back_populates="user")
     certificates = relationship("Certificate", back_populates="user")
     portfolio = relationship("Portfolio", uselist=False, back_populates="user")
@@ -110,7 +109,6 @@ class Lesson(Base):
 
     # Relationships
     course = relationship("Course", back_populates="lessons")
-    schedules = relationship("Schedule", back_populates="lesson")
 
 class Badge(Base):
     __tablename__ = "badges"
