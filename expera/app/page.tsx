@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Home() {
   const router = useRouter();
@@ -48,6 +49,7 @@ export default function Home() {
                     filter: "drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.3))",
                   }}
                 />
+                ```
               </div>
             </div>
           </div>

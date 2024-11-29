@@ -21,6 +21,12 @@ export default function StreakPage() {
     lastActive: "Today"
   };
 
+  const getStreakImage = (streak: number) => {
+    if (streak < 1) return "/fires/1.png";
+    if (streak < 10) return "/fires/2.png";
+    return "/fires/3.png";
+  };
+
   const topStudents: Student[] = [
     { name: "Alex", skillPoints: 2500, rank: 1 },
     { name: "Maria", skillPoints: 2350, rank: 2 },
@@ -35,7 +41,7 @@ export default function StreakPage() {
   ];
 
   return (
-    <div 
+    <div
       className="min-h-screen w-full text-white bg-gradient-to-b from-purple-950 to-black pt-12"
       style={{
         backgroundImage: 'url("/images/profile_back.png")',
@@ -62,26 +68,20 @@ export default function StreakPage() {
                 </div>
                 <div className="text-gray-300">Best Streak</div>
               </div>
-              <div className="text-center">
-                <div className="font-pixel text-4xl text-pink-400 mb-2">
-                  {streakData.totalDays}
-                </div>
-                <div className="text-gray-300">Total Days</div>
-              </div>
-              <div className="text-center">
-                <div className="font-pixel text-xl text-pink-400 mb-2">
-                  {streakData.lastActive}
-                </div>
-                <div className="text-gray-300">Last Active</div>
-              </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <img
+                src={getStreakImage(streakData.currentStreak)}
+                alt={`Streak: ${streakData.currentStreak} days`}
+                className="h-200 w-auto object-contain"
+              />
             </div>
           </div>
-
           <div className="backdrop-blur-sm bg-purple-950/30 rounded-xl border border-purple-500/20 p-6">
             <h2 className="font-pixel text-2xl text-pink-400 mb-6">Top Students</h2>
             <div className="space-y-4">
               {topStudents.map((student) => (
-                <div 
+                <div
                   key={student.rank}
                   className="flex items-center justify-between p-3 rounded-lg bg-purple-900/30 hover:bg-purple-800/30 transition-colors"
                 >
