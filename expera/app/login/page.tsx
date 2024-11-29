@@ -1,7 +1,8 @@
-// app/login/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,14 +11,45 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const { access_token } = data;
+        
+        // Сохранение токена
+        localStorage.setItem("access_token", access_token);
+        console.log("Saved token:", access_token);
+
+        // Перенаправление
+        console.log("Before redirect");
+        router.push("/dashboard");
+        console.log("After redirect");
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Ошибка авторизации.");
+      }
+    } catch (error) {
+      
+      setErrorMessage("Ошибка соединения. Проверьте подключение к интернету.");
+      console.log(error)
+    }
   };
 
   if (!mounted) {
@@ -25,7 +57,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
       style={{
         backgroundImage: 'url("/images/main_back.png")',
@@ -40,7 +72,13 @@ export default function LoginPage() {
           <h2 className="font-pixel text-3xl text-white text-center mb-8">
             Логин
           </h2>
-          
+
+          {errorMessage && (
+            <div className="bg-red-500/70 text-white font-pixel text-sm rounded-lg px-4 py-2 mb-4">
+              {errorMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="font-pixel text-gray-200 block text-sm mb-2">
@@ -87,7 +125,7 @@ export default function LoginPage() {
               Впервые?
             </p>
             <button
-              onClick={() => router.push('/register')}
+              onClick={() => router.push("/register")}
               className="font-pixel text-pink-400 hover:text-pink-300 transition"
             >
               Зарегистрироваться
