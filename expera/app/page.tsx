@@ -41,7 +41,7 @@ export default function Home() {
 
             <div className="flex-1 backdrop-blur-sm bg-purple-950/30 rounded-xl border border-purple-500/20 h-[400px] flex flex-col">
               <div className="flex-1 flex items-center justify-center p-4">
-                <Image
+                <img
                   src="/images/hero-boy.png"
                   alt="Educational Platform"
                   className="max-h-[400px] w-auto object-contain"
@@ -49,6 +49,7 @@ export default function Home() {
                     filter: "drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.3))",
                   }}
                 />
+                ```
               </div>
             </div>
           </div>

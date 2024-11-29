@@ -15,11 +15,11 @@ const Navigation = () => {
             <Link href="/dashboard" className="font-pixel text-white hover:text-pink-400 transition">
               Home
             </Link>
-            <Link href="/dashboard/courses" className="font-pixel text-white hover:text-pink-400 transition">
-              Courses
-            </Link>
             <Link href="/dashboard/schedule" className="font-pixel text-white hover:text-pink-400 transition">
               Schedule
+            </Link>
+            <Link href="/dashboard/profile" className="font-pixel text-white hover:text-pink-400 transition">
+              Profile
             </Link>
           </div>
         </div>
