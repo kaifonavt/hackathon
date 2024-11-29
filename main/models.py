@@ -31,7 +31,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     username = Column(String, unique=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    password = Column(String, nullable=False)
     avatar = Column(String, nullable=True)
     bio = Column(Text, nullable=True)
     total_points = Column(Integer, default=0)
@@ -39,7 +39,7 @@ class User(Base):
     longest_streak = Column(Integer, default=0)
     last_activity = Column(Date, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     taught_courses = relationship("Course", back_populates="instructor")
@@ -62,7 +62,7 @@ class Course(Base):
     duration_weeks = Column(Integer, nullable=False)
     total_lessons = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
     instructor = relationship("User", back_populates="taught_courses")
@@ -97,7 +97,7 @@ class Lesson(Base):
     points = Column(Integer, default=0)
     lesson_metadata = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     course = relationship("Course", back_populates="lessons")
@@ -113,7 +113,7 @@ class Schedule(Base):
     is_completed = Column(Boolean, default=False)
     completion_metadata = Column(MutableDict.as_mutable(JSON), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     student = relationship("User", back_populates="schedules")
@@ -129,7 +129,7 @@ class Badge(Base):
     styles = Column(MutableDict.as_mutable(JSON), default={})
     requirements = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     user_badges = relationship("UserBadge", back_populates="badge")
@@ -175,7 +175,7 @@ class PersonalGoal(Base):
     progress_data = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), nullable=True)
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     user = relationship("User", back_populates="goals")
@@ -189,6 +189,8 @@ class LeaderboardEntry(Base):
     rank = Column(Integer, index=True)
     stats = Column(MutableDict.as_mutable(JSON), default={})
     last_calculated = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     user = relationship("User", back_populates="leaderboard_entry")
@@ -202,7 +204,7 @@ class Portfolio(Base):
     skills = Column(MutableDict.as_mutable(JSON), default={})
     achievements_summary = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     user = relationship("User", back_populates="portfolio")
@@ -217,6 +219,7 @@ class ActivityLog(Base):
     points_earned = Column(Integer, default=0)
     activity_log_metadata = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     user = relationship("User", back_populates="activity_logs")
