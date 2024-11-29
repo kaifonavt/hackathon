@@ -1,5 +1,5 @@
-'use client';
-
+"use client";
+import Image from "next/image";
 interface Student {
   name: string;
   skillPoints: number;
@@ -18,9 +18,14 @@ export default function StreakPage() {
     currentStreak: 7,
     bestStreak: 14,
     totalDays: 45,
-    lastActive: "Today"
+    lastActive: "Today",
   };
 
+  const getStreakImage = (streak: number) => {
+    if (streak < 1) return "/fires/1.png";
+    if (streak < 10) return "/fires/2.png";
+    return "/fires/3.png";
+  };
   const topStudents: Student[] = [
     { name: "Alex", skillPoints: 2500, rank: 1 },
     { name: "Maria", skillPoints: 2350, rank: 2 },
@@ -35,7 +40,7 @@ export default function StreakPage() {
   ];
 
   return (
-    <div 
+    <div
       className="min-h-screen w-full text-white bg-gradient-to-b from-purple-950 to-black pt-12"
       style={{
         backgroundImage: 'url("/images/profile_back.png")',
@@ -48,7 +53,9 @@ export default function StreakPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="backdrop-blur-sm bg-purple-950/30 rounded-xl border border-purple-500/20 p-6">
-            <h2 className="font-pixel text-2xl text-pink-400 mb-6">Your Streak</h2>
+            <h2 className="font-pixel text-2xl text-pink-400 mb-6">
+              Your Streak
+            </h2>
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center">
                 <div className="font-pixel text-4xl text-pink-400 mb-2">
@@ -75,21 +82,36 @@ export default function StreakPage() {
                 <div className="text-gray-300">Last Active</div>
               </div>
             </div>
+            <div>
+              <Image
+                src={getStreakImage(streakData.currentStreak)}
+                width={400}
+                height={400}
+                alt={`Streak: ${streakData.currentStreak} days`}
+                className="max-h-[400px] w-auto object-contain"
+              />
+            </div>
           </div>
 
           <div className="backdrop-blur-sm bg-purple-950/30 rounded-xl border border-purple-500/20 p-6">
-            <h2 className="font-pixel text-2xl text-pink-400 mb-6">Top Students</h2>
+            <h2 className="font-pixel text-2xl text-pink-400 mb-6">
+              Top Students
+            </h2>
             <div className="space-y-4">
               {topStudents.map((student) => (
-                <div 
+                <div
                   key={student.rank}
                   className="flex items-center justify-between p-3 rounded-lg bg-purple-900/30 hover:bg-purple-800/30 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="font-pixel text-xl w-8">{student.rank}</span>
+                    <span className="font-pixel text-xl w-8">
+                      {student.rank}
+                    </span>
                     <span className="font-pixel text-lg">{student.name}</span>
                   </div>
-                  <div className="font-pixel text-pink-400">{student.skillPoints}</div>
+                  <div className="font-pixel text-pink-400">
+                    {student.skillPoints}
+                  </div>
                 </div>
               ))}
             </div>

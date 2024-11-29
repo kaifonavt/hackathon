@@ -1,4 +1,5 @@
 import ScheduleTable from "@/components/schedule";
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
     >          <div className="flex gap-8 items-center">
         <div className="flex-1 backdrop-blur-sm bg-purple-950/30 rounded-xl border border-purple-500/20 h-[400px] flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <img
+          <Image
             src="/images/coin.png"
             alt="Educational Platform"
             className="max-h-[400px] w-auto object-contain"
