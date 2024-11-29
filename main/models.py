@@ -1,9 +1,11 @@
+import enum
 from typing import Union, List, Optional
 from sqlalchemy import (
     JSON,
     Boolean,
     Column,
     DateTime,
+    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -11,6 +13,7 @@ from sqlalchemy import (
     Text,
     Table,
     Date,
+    Time,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -42,9 +45,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    taught_courses = relationship("Course", back_populates="instructor")
     enrolled_courses = relationship("Course", secondary=course_students, back_populates="students")
-    schedules = relationship("Schedule", back_populates="student")
     goals = relationship("PersonalGoal", back_populates="user")
     certificates = relationship("Certificate", back_populates="user")
     portfolio = relationship("Portfolio", uselist=False, back_populates="user")
@@ -58,18 +59,25 @@ class Course(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     title = Column(String, nullable=False, index=True)
     description = Column(Text, nullable=True)
-    instructor_id = Column(Integer, ForeignKey("users.id"), index=True)
-    duration_weeks = Column(Integer, nullable=False)
     total_lessons = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    instructor = relationship("User", back_populates="taught_courses")
     students = relationship("User", secondary=course_students, back_populates="enrolled_courses")
     lessons = relationship("Lesson", back_populates="course")
     enrollments = relationship("Enrollment", back_populates="course")
     certificates = relationship("Certificate", back_populates="course")
+
+class Schedule(Base):
+    __tablename__ = "schedules"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    code = Column(String(10), nullable=False, index=True)  # A490, K190, etc.
+    day_of_week = Column(Integer, nullable=False)  # 1-5 для Пн-Пт
+    start_time = Column(Time, nullable=False)
+    end_time = Column(Time, nullable=False)
+
 
 class Enrollment(Base):
     __tablename__ = "enrollments"
@@ -101,23 +109,6 @@ class Lesson(Base):
 
     # Relationships
     course = relationship("Course", back_populates="lessons")
-    schedules = relationship("Schedule", back_populates="lesson")
-
-class Schedule(Base):
-    __tablename__ = "schedules"
-
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    student_id = Column(Integer, ForeignKey("users.id"), index=True)
-    lesson_id = Column(Integer, ForeignKey("lessons.id"), index=True)
-    scheduled_date = Column(DateTime(timezone=True), nullable=False)
-    is_completed = Column(Boolean, default=False)
-    completion_metadata = Column(MutableDict.as_mutable(JSON), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    # Relationships
-    student = relationship("User", back_populates="schedules")
-    lesson = relationship("Lesson", back_populates="schedules")
 
 class Badge(Base):
     __tablename__ = "badges"

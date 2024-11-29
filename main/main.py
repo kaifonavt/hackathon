@@ -23,7 +23,7 @@ logger.info("Starting application...")
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Portfolio API",
+    title="ExperaAPI",
     description="API for managing user portfolios",
     version="1.0.0"
 )

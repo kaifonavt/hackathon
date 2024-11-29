@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.46.2",
+    "@types/axios": "^0.9.36",
     "@vercel/postgres": "^0.10.0",
+    "axios": "^1.7.8",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "next": "15.0.3",
