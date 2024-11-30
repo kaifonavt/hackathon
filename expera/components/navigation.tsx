@@ -6,7 +6,7 @@ import axios from 'axios';
 
 const Navigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.BACKEND_URL || "https://expera-5a7911691b55.herokuapp.com";
 
   useEffect(() => {
     const verifyToken = async () => {

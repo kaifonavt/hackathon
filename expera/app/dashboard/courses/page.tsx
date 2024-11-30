@@ -17,7 +17,7 @@ const CoursesDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.BACKEND_URL || "https://expera-5a7911691b55.herokuapp.com";
 
   useEffect(() => {
     const fetchCourses = async () => {
