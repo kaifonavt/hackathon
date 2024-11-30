@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Annotated, List
 from database import get_db
 from routes.user import crud, schemas
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,8 +53,16 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 @router.get("/verify-token")
-def verify_route(email: str = Depends(verify_token), db=Depends(get_db)):
-    user = crud.get_user_by_email(db=db,email=email)
+def verify_route(
+    email: Annotated[str, Depends(verify_token)],
+    db: Annotated[Session, Depends(get_db)]
+):
+    user = crud.get_user_by_email(db=db, email=email)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
     return user
 
 # Эндпоинт для логина
