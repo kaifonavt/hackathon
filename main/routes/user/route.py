@@ -53,8 +53,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 @router.get("/verify-token")
-def verify_route(email: str = Depends(verify_token)):
-    user = crud.get_user_by_email(db=Depends(get_db),email=email)
+def verify_route(email: str = Depends(verify_token), db=Depends(get_db)):
+    user = crud.get_user_by_email(db=db,email=email)
     return user
 
 # Эндпоинт для логина
