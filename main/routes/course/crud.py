@@ -23,15 +23,15 @@ def get_courses(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Course).offset(skip).limit(limit).all()
 
 def update_course(db: Session, course_id: int, title: Optional[str] = None, 
-                 description: Optional[str] = None, duration_weeks: Optional[int] = None):
+                 description: Optional[str] = None):
     db_course = db.query(Course).filter(Course.id == course_id).first()
     if db_course:
         if title:
             db_course.title = title
         if description is not None:
             db_course.description = description
-        if duration_weeks:
-            db_course.duration_weeks = duration_weeks
+        # if duration_weeks:
+        #     db_course.duration_weeks = duration_weeks
         db.commit()
         db.refresh(db_course)
     return db_course

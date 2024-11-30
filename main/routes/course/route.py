@@ -43,7 +43,6 @@ def update_course(
         course_id=course_id,
         title=course.title,
         description=course.description,
-        duration_weeks=course.duration_weeks
     )
     if db_course is None:
         raise HTTPException(status_code=404, detail="Course not found")

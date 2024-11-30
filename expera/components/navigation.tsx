@@ -1,8 +1,41 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from "next/link";
-const nigga = true
+import axios from 'axios';
+
 const Navigation = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      if (typeof window === 'undefined') return;
+      
+      const access_token = localStorage.getItem('access_token');
+      
+      if (!access_token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      try {
+        await axios.get(`${BACKEND_URL}/users/verify-token`, {
+          headers: {
+            'Authorization': `Bearer ${access_token}`
+          }
+        });
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error('Token verification failed:', error);
+        setIsLoggedIn(false);
+        localStorage.removeItem('access_token');
+      }
+    };
+
+    verifyToken();
+  }, []);
+
   return (
     <nav className="bg-purple-900/50 backdrop-blur-sm fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -31,7 +64,7 @@ const Navigation = () => {
             >
               Courses
             </Link>
-            {nigga ? (
+            {isLoggedIn ? (
               <Link
                 href="/dashboard/profile"
                 className="font-pixel text-white hover:text-pink-400 transition"
