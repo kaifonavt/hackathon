@@ -12,7 +12,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const BACKEND_URL = process.env.BACKEND_URL || "https://localhost:3000";
+  const BACKEND_URL = process.env.BACKEND_URL || "https://expera-5a7911691b55.herokuapp.com";
 
   const verifyToken = async () => {
     if (typeof window === 'undefined') return;
