@@ -1,5 +1,6 @@
 import { pixelFont } from './fonts'
 import Navigation from '@/components/navigation'
+import {AuthProvider} from '@/context/AuthContext'
 import './globals.css'
 
 export const metadata = {
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={pixelFont.variable}>
       <body className="font-pixel">
-        <Navigation />
-        {children}
+        <AuthProvider>
+          <Navigation />
+          {children}
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
