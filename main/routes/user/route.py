@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt
-
+from database import SessionLocal
 # JWT конфигурация
 SECRET_KEY = "sosal"
 ALGORITHM = "HS256"
@@ -57,7 +57,7 @@ def verify_route(
     email: Annotated[str, Depends(verify_token)],
     db: Annotated[Session, Depends(get_db)]
 ):
-    user = crud.get_user_by_email(db=db, email=email)
+    user = crud.get_user_by_email(db=SessionLocal(), email=email)
     if not user:
         raise HTTPException(
             status_code=404,
