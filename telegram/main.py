@@ -1,71 +1,107 @@
-import telebot
-import threading
-import time
-import random  # Не забывайте импортировать random
+import asyncio
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+from aiogram.types import Message
+from aiogram.enums import ParseMode, ChatAction
+from aiogram.utils.markdown import hbold
+from config import TELEGRAM_TOKEN
+from gpt_service import GPTService
 
-# Создаем экземпляр бота
-bot = telebot.TeleBot('7612971147:AAH36SwnOjJxGdC0P92Qxz4Axa9pjiRCZ9U')
+# Enable logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Множество для хранения chat_id пользователей, которым нужно отправлять сообщения
-active_users = {1228215570}
+# Initialize bot, dispatcher and GPT service
+bot = Bot(token=TELEGRAM_TOKEN)
+dp = Dispatcher()
+gpt_service = GPTService()
 
-# Список мотивационных сообщений
-motivational_messages = [
-    "Ты способен на большее, чем ты думаешь!",
-    "Продолжай двигаться вперед! Маленькие шаги приводят к большим победам 🚀",
-    "Каждый день — это новая возможность стать лучше!",
-    "Ты делаешь отличный прогресс, не сдавайся 💪",
-    "Улыбнись, и весь мир улыбнется тебе! 😊"
-]
-
-# Функция для отправки мотивационных сообщений
-def send_motivational_messages():
-    while True:
-        try:
-            for chat_id in active_users:  # Для множества просто итерация без .keys()
-                message = random.choice(motivational_messages)  # Выбираем случайное сообщение
-                bot.send_message(chat_id, message)
-            time.sleep(120)  # Отправка каждые 2 минуты
-        except Exception as e:
-            print(f"Ошибка при отправке сообщения: {e}")
-            time.sleep(5)  # Если ошибка, повтор через 5 секунд
-
-# Обработчик команды /start
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(
-        message.chat.id, 
-        f"Привет, {message.from_user.first_name}! Я буду отправлять тебе мотивационные сообщения. Напиши /subscribe, чтобы подписаться!"
+@dp.message(Command("start"))
+async def cmd_start(message: Message):
+    """Handle /start command"""
+    kb = [
+        [
+            types.KeyboardButton(text="/clear"),
+            types.KeyboardButton(text="/history")
+        ]
+    ]
+    keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        resize_keyboard=True,
+        input_field_placeholder="Задайте ваш вопрос..."
+    )
+    
+    welcome_text = (
+        f"👋 Привет, {hbold(message.from_user.first_name)}!\n\n"
+        "Я бот с GPT. Задайте мне любой вопрос, и я постараюсь помочь.\n\n"
+        "Доступные команды:\n"
+        "/clear - очистить историю диалога\n"
+        "/history - показать историю диалога"
+    )
+    
+    await message.answer(
+        welcome_text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=keyboard
     )
 
-# Обработчик команды /subscribe
-@bot.message_handler(commands=['subscribe'])
-def subscribe(message):
-    chat_id = message.chat.id
-    if chat_id not in active_users:
-        active_users.add(chat_id)  # Используем .add() для множества
-        bot.send_message(chat_id, "Вы подписаны на мотивационные сообщения! Я буду отправлять их каждые 2 минуты 😊")
-    else:
-        bot.send_message(chat_id, "Вы уже подписаны на мотивационные сообщения.")
+@dp.message(Command("clear"))
+async def cmd_clear(message: Message):
+    """Handle /clear command"""
+    try:
+        gpt_service.clear_history(message.chat.id)
+        await message.answer("✨ История диалога очищена!")
+    except Exception as e:
+        logger.error(f"Error clearing history: {e}")
+        await message.answer("❌ Произошла ошибка при очистке истории.")
 
-# Обработчик команды /unsubscribe
-@bot.message_handler(commands=['unsubscribe'])
-def unsubscribe(message):
-    chat_id = message.chat.id
-    if chat_id in active_users:
-        active_users.remove(chat_id)  # Используем .remove() для множества
-        bot.send_message(chat_id, "Вы отписались от мотивационных сообщений. Если передумаете, напишите /subscribe.")
-    else:
-        bot.send_message(chat_id, "Вы не были подписаны на мотивационные сообщения.")
+@dp.message(Command("history"))
+async def cmd_history(message: Message):
+    """Handle /history command"""
+    try:
+        history = gpt_service.get_formatted_history(message.chat.id)
+        await message.answer(history)
+    except Exception as e:
+        logger.error(f"Error getting history: {e}")
+        await message.answer("❌ Произошла ошибка при получении истории.")
 
-# Обработчик команды /id
-@bot.message_handler(commands=['id'])
-def send_chat_id(message):
-    bot.send_message(message.chat.id, f"Ваш chat_id: {message.chat.id}")
+@dp.message()
+async def process_message(message: Message):
+    """Handle all other messages"""
+    try:
+        chat_id = message.chat.id
+        user_message = message.text
 
-# Запускаем поток для отправки мотивационных сообщений
-motivational_thread = threading.Thread(target=send_motivational_messages)
-motivational_thread.daemon = True
-motivational_thread.start()
+        await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+        
+        response = await gpt_service.get_gpt_response(chat_id, user_message)
+        
+        if response:
+            await message.answer(response)
+        else:
+            await message.answer("😔 Извините, не удалось получить ответ. Попробуйте еще раз.")
+        
+    except Exception as e:
+        logger.error(f"Error processing message: {e}")
+        error_message = (
+            "😔 Извините, произошла ошибка при обработке вашего сообщения.\n"
+            "Пожалуйста, попробуйте позже или начните новый диалог командой /clear"
+        )
+        await message.answer(error_message)
 
-bot.polling(none_stop=True)
+async def main():
+    """Main function to start the bot"""
+    try:
+        logger.info("Starting bot...")
+        await dp.start_polling(bot)
+    except Exception as e:
+        logger.error(f"Critical error: {e}")
+    finally:
+        await bot.session.close()
+
+if __name__ == '__main__':
+    asyncio.run(main())
