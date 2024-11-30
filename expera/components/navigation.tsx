@@ -1,40 +1,9 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import Link from "next/link";
-import axios from 'axios';
 
 const Navigation = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const BACKEND_URL = process.env.BACKEND_URL || "https://expera-5a7911691b55.herokuapp.com";
-
-  useEffect(() => {
-    const verifyToken = async () => {
-      if (typeof window === 'undefined') return;
-      
-      const access_token = localStorage.getItem('access_token');
-      
-      if (!access_token) {
-        setIsLoggedIn(false);
-        return;
-      }
-
-      try {
-        await axios.get(`${BACKEND_URL}/users/verify-token`, {
-          headers: {
-            'Authorization': `Bearer ${access_token}`
-          }
-        });
-        setIsLoggedIn(true);
-      } catch (error) {
-        console.error('Token verification failed:', error);
-        setIsLoggedIn(false);
-        localStorage.removeItem('access_token');
-      }
-    };
-
-    verifyToken();
-  }, []);
+  const { isLoggedIn } = useAuth();
 
   return (
     <nav className="bg-purple-900/50 backdrop-blur-sm fixed w-full z-50">
@@ -46,36 +15,21 @@ const Navigation = () => {
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/dashboard"
-              className="font-pixel text-white hover:text-pink-400 transition"
-            >
+            <Link href="/dashboard" className="font-pixel text-white hover:text-pink-400 transition">
               Home
             </Link>
-            <Link
-              href="/dashboard/schedule"
-              className="font-pixel text-white hover:text-pink-400 transition"
-            >
+            <Link href="/dashboard/schedule" className="font-pixel text-white hover:text-pink-400 transition">
               Schedule
             </Link>
-            <Link
-              href="/dashboard/courses"
-              className="font-pixel text-white hover:text-pink-400 transition"
-            >
+            <Link href="/dashboard/courses" className="font-pixel text-white hover:text-pink-400 transition">
               Courses
             </Link>
             {isLoggedIn ? (
-              <Link
-                href="/dashboard/profile"
-                className="font-pixel text-white hover:text-pink-400 transition"
-              >
+              <Link href="/dashboard/profile" className="font-pixel text-white hover:text-pink-400 transition">
                 Profile
               </Link>
             ) : (
-              <Link
-                href="/login"
-                className="font-pixel text-white hover:text-pink-400 transition"
-              >
+              <Link href="/login" className="font-pixel text-white hover:text-pink-400 transition">
                 Login
               </Link>
             )}
@@ -85,5 +39,3 @@ const Navigation = () => {
     </nav>
   );
 };
-
-export default Navigation;
